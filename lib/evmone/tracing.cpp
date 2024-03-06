@@ -107,8 +107,6 @@ class InstructionTracer : public Tracer
     {
         const auto& ctx = m_contexts.top();
         const auto used_gas = ctx.start_gas - gas;
-        if ((used_gas > m_trace_gas_amount) && (m_trace_gas_amount != -1))
-            return;
 
         const auto opcode = ctx.code[pc];
         m_out << "{";
@@ -120,6 +118,11 @@ class InstructionTracer : public Tracer
         // Full memory can be dumped as evmc::hex({state.memory.data(), state.memory.size()}),
         // but this should not be done by default. Adding --tracing=+memory option would be nice.
         m_out << R"(,"memSize":)" << std::dec << state.memory.size();
+        if ((used_gas > m_trace_gas_amount) && (m_trace_gas_amount != -1))
+        {
+            m_out << "}\n";
+            return;
+        }
 
         output_stack(stack_top, stack_height);
         if (!state.return_data.empty())
